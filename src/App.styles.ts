@@ -12,7 +12,3 @@ export const StyledButton = styled(IconButton)`
   right: 20px;
   top: 20px;
 `;
-
-export const StyledGrid = styled(Grid)`
-  border-radius: 50%;
-`;
