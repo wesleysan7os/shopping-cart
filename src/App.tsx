@@ -21,7 +21,6 @@ export type CartItemType = {
   amount: number;
 }
 
-const handleRemoveFromCart = () => null;
 
 export default function App() {
   const [cartIsOpen, setCartIsOpen] = useState(false);
@@ -33,7 +32,7 @@ export default function App() {
   const { data, isLoading, error } = useQuery<CartItemType[]>('products', getProducts);
   
   const getTotalItems = (items: CartItemType[]) => 
-    items.reduce((acumulator: number, item) => acumulator + item.amount, 0);
+  items.reduce((acumulator: number, item) => acumulator + item.amount, 0);
   
   const handleAddToCart = (clickedItem: CartItemType) => {
     setCartItems(cartItems => {
@@ -41,7 +40,7 @@ export default function App() {
       // Is the item already added in the cart?
       if (isItemInCart) {
         return cartItems.map((item: CartItemType) =>
-          item.id === isItemInCart.id ? { ...item, amount: item.amount + 1 } : item
+        item.id === isItemInCart.id ? { ...item, amount: item.amount + 1 } : item
         );
       }
       // First time the item is added
@@ -49,6 +48,19 @@ export default function App() {
     })
   };
 
+  const handleRemoveFromCart = (id: number) => (
+    setCartItems(cartItems =>
+        cartItems.reduce((acumulator, item) => {
+        if (item.id === id) {
+          if (item.amount === 1) return acumulator;
+          return [...acumulator, {...item, amount: item.amount - 1}];
+        } else {
+          return [...acumulator, item];
+        }
+      }, [] as CartItemType[]) 
+    )
+  );
+  
   return (
     <Wrapper>
       <Drawer
@@ -56,26 +68,32 @@ export default function App() {
         open={cartIsOpen}
         onClose={() => setCartIsOpen(false)}
       >
-        <Cart 
+        <Cart
           cartItems={cartItems}
           addToCart={handleAddToCart}
           removeFromCart={handleRemoveFromCart}
         />
       </Drawer>
 
-      <StyledButton onClick={() => setCartIsOpen(true)}>
-        <Badge badgeContent={getTotalItems(cartItems)} color="error">
-          <AddShoppingCartIcon />
-        </Badge>
-      </StyledButton>
+      {isLoading ? (
+        <LinearProgress />
+      ) : (
+        <>
+          <StyledButton onClick={() => setCartIsOpen(true)}>
+            <Badge badgeContent={getTotalItems(cartItems)} color="error">
+              <AddShoppingCartIcon />
+            </Badge>
+          </StyledButton>
 
-      <Grid container spacing={3}>
-        {data?.map((item: CartItemType) => (
-          <Grid item key={item.id} xs={12} sm={4}>
-            <Item item={item} handleAddToCart={handleAddToCart} />
+          <Grid container spacing={3}>
+            {data?.map((item: CartItemType) => (
+              <Grid item key={item.id} xs={12} sm={4}>
+                <Item item={item} handleAddToCart={handleAddToCart} />
+              </Grid>
+            ))}
           </Grid>
-        ))}
-      </Grid>
+        </>
+      )}
     </Wrapper>
   );
 }
